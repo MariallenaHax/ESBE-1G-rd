@@ -1,3 +1,3 @@
-# ESBE-1G - Minecraft BE Shader(Android,iOS)
-## NOT SUPPORT Minecraft BE v1.16+
+# ESBE-1G - Minecraft BE Shader(Windows,Android,iOS)
+## ONLY SUPPORT Minecraft BE v1.21.100+
 ## END OF DEVELOPMENT
