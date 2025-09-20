@@ -1,0 +1,25 @@
+{
+  "base_profile": {
+    "platforms": ["Direct3D SM50"],
+    "merge_source": ["../src-materials-windows"],
+    "exclude_patterns": [".*", "_*"],
+    "include_search_paths": ["../include"]
+  },
+  "profiles": {
+    "android": {
+      "macros": [],
+      "platforms": ["ESSL_300"],
+    "merge_source": ["../src-materials-android"]
+    },
+    "ios": {
+      "macros": [],
+      "platforms": ["Metal"],
+"merge_source": ["../src-materials-ios"]
+    },
+    "windows": {
+      "macros": [],
+    "merge_source": ["../src-materials-windows"],
+      "platforms": ["Direct3D_SM50"]
+    }
+  }
+}
