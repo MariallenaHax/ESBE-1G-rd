@@ -8,7 +8,6 @@ SAMPLER2D_AUTOREG(s_SeasonsTexture);
 SAMPLER2D_AUTOREG(s_LightMapTexture);
 
 uniform vec4 FogAndDistanceControl;
-uniform vec4 FogControl;
 uniform vec4 FogColor;
 uniform vec4 ViewPositionAndTime;
 
@@ -95,7 +94,7 @@ float daylight = texture2D(s_LightMapTexture,vec2(0.0, 1.0)).r;
 float sunlight = smoothstep(0.87-0.00005,0.87+0.00005,v_lightmapUV.y);
 float shset = 0.85-v_lightmapUV.x;
 float dusk = max(smoothstep(0.55,0.4,daylight),smoothstep(0.65,0.8,daylight));
-float w = step(FogControl.x,.0001);
+float w = step(FogAndDistanceControl.x,.0001);
 float cosT = abs(dot(vec3(0.,1.,0.),normalize(v_worldPos)));
 float rend = smoothstep(.95,.9,length(v_worldPos)/FogAndDistanceControl.z);
 daylight *= weather;
