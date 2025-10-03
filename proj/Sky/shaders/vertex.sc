@@ -4,12 +4,11 @@ $input a_color0, a_position
         $input i_data1, i_data2, i_data3
     #endif
 
-$output v_color0, v_texcoord0, v_worldPos, v_prevWorldPos, v_sky,
+$output v_color0, v_texcoord0, v_worldPos, v_prevWorldPos, v_sky, v_fog,
 
 #include <bgfx_shader.sh>
 
 uniform vec4 SkyColor;
-uniform vec4 FogColor;
 
 void main() {
 #ifdef OPAQUE_PASS
@@ -29,6 +28,7 @@ void main() {
     pos.y -= length(pos.xyz)*.2;
     v_worldPos = mul(model, vec4(pos, 1.0)).xyz;
     gl_Position = mul(u_modelViewProj, vec4(pos, 1.0));
-    v_color0 = mix(SkyColor, FogColor, a_color0.x);
+    v_color0 = a_color0;
+    v_fog = SkyColor;
     v_prevWorldPos = a_position.xyz;
 }
