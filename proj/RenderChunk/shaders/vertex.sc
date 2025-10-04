@@ -2,7 +2,7 @@ $input a_color0, a_position, a_texcoord0, a_texcoord1
 #ifdef INSTANCING__ON
      $input i_data0, i_data1, i_data2, i_data3
 #endif
-$output v_color0, v_fog, v_texcoord0, v_lightmapUV,v_worldPos,v_prevWorldPos
+$output v_color0, v_fog, v_texcoord0, v_lightmapUV,v_worldPos,v_prevWorldPos,v_sky
 
 #include <bgfx_shader.sh>
 
@@ -27,6 +27,7 @@ highp float random(highp float p){
 }
 #define a_texcoord1 vec2(fract(a_texcoord1.x*15.9375),floor(a_texcoord1.x*15.9375)*0.0625)
 void main() {
+    v_sky = vec4_splat(0.);
     mat4 model;
 #ifdef INSTANCING__ON
     model = mtxFromCols(i_data0, i_data1, i_data2, i_data3);
@@ -56,12 +57,13 @@ void main() {
     fogColor.a = clamp(((((camDis / FogAndDistanceControl.z) + RenderChunkFogAlpha.x) -
         FogAndDistanceControl.x) / (FogAndDistanceControl.y - FogAndDistanceControl.x)), 0.0, 1.0);
 
-#ifdef TRANSPARENT_PASS
+#ifndef ALPHA_TEST_PASS
     if(a_color0.a < 0.95) {
         color.a = mix(a_color0.a, 1.0, clamp((camDis / FogAndDistanceControl.w), 0.0, 1.0));
     }
     if(color.a < 0.95 && color.a > 0.05 && color.g > color.r){
 color.a *= 0.5;
+    v_sky = vec4_splat(1.);
 	}
 #endif
     v_texcoord0 = a_texcoord0;

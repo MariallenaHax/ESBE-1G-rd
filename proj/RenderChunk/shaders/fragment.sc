@@ -1,4 +1,4 @@
-$input v_texcoord0, v_color0, v_fog, v_lightmapUV,v_prevWorldPos,v_worldPos
+$input v_texcoord0, v_color0, v_fog, v_lightmapUV,v_prevWorldPos,v_worldPos,v_sky
 
 #include <bgfx_shader.sh>
 #include <utils/snoise.h>
@@ -44,7 +44,7 @@ vec4 water(vec4 col,float weather,highp float time,vec2 uv1,vec3 cPos,vec3 wPos)
 	float sun = smoothstep(.5,.75,uv1.y);
 	float dist = smoothstep(100.,500.,(wPos.x*wPos.x+wPos.z*wPos.z)/max(1.,abs(wPos.y)));
 	col.rgb = mix(col.rgb,vec3(col.r+col.g+col.b,1.0,1.0),dist*.25);
-		col.rgb *= mix(0.75,snoise(vec2(wPos.x-time,wPos.z)*.05)+.5,sun*((1.-dist)*.1+.1));
+	col.rgb *= mix(0.75,snoise(vec2(wPos.x-time,wPos.z)*.05)+.5,sun*((1.-dist)*.1+.1));
 
 	p.xz *= vec2(1.0,0.4);
 	p.xz += smoothstep(0.,8.,abs(p.y-8.))*.5;
@@ -110,14 +110,11 @@ diffuse.rgb = ESBEmapping(diffuse.rgb);
 
 diffuse.rgb += (vec3_splat(1.)-diffuse.rgb)*diffuse.rgb*sunlight*daylight*0.83;
 
-#ifdef TRANSPARENT_PASS
-if(v_color0.a < 0.95 && v_color0.a > 0.05 && v_color0.g > v_color0.r){
+if (v_sky.r > 0.0)
+{
 		diffuse = mix(diffuse,water(diffuse,weather,TIME,v_lightmapUV,cPos,wPos),1.2-cosT);
-		#if FANCY
-		diffuse = water(diffuse,weather,TIME,v_lightmapUV,cPos,wPos);
-		#endif
-	}
-#endif
+}
+		if (v_sky.r+w>0.5)diffuse = water(diffuse,weather,TIME,v_lightmapUV,cPos,wPos);
 
 	float s_amount = mix(0.45,0.0,sunlight);
 	diffuse.rgb = mix(diffuse.rgb,vec3(0.05,0.05,0.05),s_amount*shset*daylight);
