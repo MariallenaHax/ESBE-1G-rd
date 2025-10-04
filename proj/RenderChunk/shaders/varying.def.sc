@@ -9,6 +9,7 @@ vec4 i_data2 : TEXCOORD6;
 vec4 i_data3 : TEXCOORD5;
 
 vec4          v_color0     : COLOR0;
+vec4          v_sky        : COLOR1;
 vec4          v_fog        : COLOR2;
 vec2          v_lightmapUV : TEXCOORD1;
 centroid vec2 v_texcoord0  : TEXCOORD0;
