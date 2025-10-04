@@ -1,10 +1,11 @@
-$input v_color0, v_texcoord0, v_worldPos, v_prevWorldPos, v_sky, v_fog
+$input v_color0, v_texcoord0, v_worldPos, v_prevWorldPos
 #include <bgfx_shader.sh>
 #include <utils/snoise.h>
 #include <utils/FogUtil.h>
 
 uniform vec4 ViewPositionAndTime;
 uniform vec4 FogColor;
+uniform vec4 SkyColor;
 uniform vec4 FogAndDistanceControl;
 
 highp float fBM(const int octaves, const float lowerBound, const float upperBound, highp vec2 st) {
@@ -66,26 +67,11 @@ vec4 aurora(vec3 rd)
 
 void main()
 {
-vec4 _color = v_sky;
+vec4 _color = SkyColor;
 float weather = smoothstep(0.8,1.0,FogAndDistanceControl.y);
 float ss = smoothstep(0.0,0.5,FogColor.r - FogColor.g);
 _color = mix(mix(_color,FogColor,.33)+vec4(0.0,0.05,0.1,0.0),FogColor*1.1,smoothstep(.1,.4,v_color0.r));
 vec3 __color = _color.rgb;
-
-	float night = smoothstep(0.4,0.2,v_fog.b);
-	if(night*weather>0.0){
-		vec4 aur = vec4(smoothstep(0.0,1.5,aurora(normalize(vec3(v_prevWorldPos.x*4.0,1.0,v_prevWorldPos.z*4.0)))));
-		_color.rgb += aur.rgb*night*weather;
-	}
-
-	float day = smoothstep(0.15,0.25,FogColor.g);
-	vec3 cc = mix(vec3(0.2,0.21,0.25),vec3(1.3,1.3,1.1),day);
-	vec3 cc2 = mix(vec3(0.2,0.21,0.25)*1.1,__color*vec3(1.,.9,.8),day);
-	float lb = mix(0.1,0.5,weather);
-	float cm = fBM(10,lb,0.9,v_prevWorldPos.xz*3.5-ViewPositionAndTime.w*0.001);
-	float cm2 = fBM(5,lb,1.,v_prevWorldPos.xz*3.4-ViewPositionAndTime.w*0.001);
-	_color.rgb = mix(_color.rgb, cc, cm);
-	_color.rgb = mix(_color.rgb, mix(cc2,vec3(1.4,1.0,0.6),ss), cm2);
 
 gl_FragColor = mix(_color, FogColor, v_color0.r);
 }

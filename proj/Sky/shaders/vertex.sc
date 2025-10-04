@@ -4,7 +4,7 @@ $input a_color0, a_position
         $input i_data1, i_data2, i_data3
     #endif
 
-$output v_color0, v_texcoord0, v_worldPos, v_prevWorldPos, v_sky, v_fog,
+$output v_color0, v_texcoord0, v_worldPos, v_prevWorldPos
 
 #include <bgfx_shader.sh>
 
@@ -24,11 +24,9 @@ void main() {
 
     v_texcoord0 = a_texcoord0;
     vec3 pos = a_position;
-    v_sky = v_color0;
     pos.y -= length(pos.xyz)*.2;
     v_worldPos = mul(model, vec4(pos, 1.0)).xyz;
     gl_Position = mul(u_modelViewProj, vec4(pos, 1.0));
     v_color0 = a_color0;
-    v_fog = SkyColor;
     v_prevWorldPos = a_position.xyz;
 }
