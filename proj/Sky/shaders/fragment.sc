@@ -1,11 +1,10 @@
-$input v_color0, v_texcoord0, v_worldPos, v_prevWorldPos, v_sky
+$input v_color0, v_texcoord0, v_worldPos, v_prevWorldPos
 #include <bgfx_shader.sh>
 #include <utils/snoise.h>
 #include <utils/FogUtil.h>
 
 uniform vec4 ViewPositionAndTime;
 uniform vec4 FogColor;
-uniform vec4 FogControl;
 uniform vec4 SkyColor;
 uniform vec4 FogAndDistanceControl;
 
@@ -68,13 +67,13 @@ vec4 aurora(vec3 rd)
 
 void main()
 {
-vec4 _color = v_color0;
+vec4 _color = SkyColor;
 float weather = smoothstep(0.8,1.0,FogAndDistanceControl.y);
 float ss = smoothstep(0.0,0.5,FogColor.r - FogColor.g);
-_color = mix(mix(_color,FogColor,.33)+vec4(0.0,0.05,0.1,0.0),FogColor*1.1,smoothstep(.1,.4,FogColor.r));
+_color = mix(mix(_color,FogColor,.33)+vec4(0.0,0.05,0.1,0.0),FogColor*1.1,smoothstep(.1,.4,v_color0.r));
 vec3 __color = _color.rgb;
 
-	float night = smoothstep(0.4,0.2,v_color0.b);
+	float night = smoothstep(0.4,0.2,SkyColor.b);
 	if(night*weather>0.0){
 		vec4 aur = vec4(smoothstep(0.0,1.5,aurora(normalize(vec3(v_prevWorldPos.x*4.0,1.0,v_prevWorldPos.z*4.0)))));
 		_color.rgb += aur.rgb*night*weather;
@@ -89,5 +88,5 @@ vec3 __color = _color.rgb;
 	_color.rgb = mix(_color.rgb, cc, cm);
 	_color.rgb = mix(_color.rgb, mix(cc2,vec3(1.4,1.0,0.6),ss), cm2);
 
-gl_FragColor = mix(_color, FogColor, FogColor.r);
+gl_FragColor = mix(_color, FogColor, v_color0.r);
 }
