@@ -61,10 +61,6 @@ void main() {
     if(a_color0.a < 0.95) {
         color.a = mix(a_color0.a, 1.0, clamp((camDis / FogAndDistanceControl.w), 0.0, 1.0));
     }
-    if(color.a < 0.95 && color.a > 0.05 && color.g > color.r){
-color.a *= 0.5;
-    v_sky = vec4_splat(1.);
-	}
 #endif
     v_texcoord0 = a_texcoord0;
     v_lightmapUV = a_texcoord1;
@@ -84,6 +80,8 @@ v_worldPos = worldPos;
     if(color.a < 0.95 && color.a > 0.05 && color.g > color.r){
 			vec3 l = worldPos.xyz + ViewPositionAndTime.xyz;
 			gl_Position.y += sin(ViewPositionAndTime.w * 3.5 + 2.0 * l.x + 2.0 * l.z + l.y) * 0.06 * fract(a_position.y) * random(l.x+l.y+l.z);
+color.a *= 0.5;
+    v_sky = vec4_splat(1.);
 	}
 #endif
 }
