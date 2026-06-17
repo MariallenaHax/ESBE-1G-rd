@@ -26,6 +26,8 @@ highp float random(highp float p){
 		return mix(hash11(floor(p)),hash11(ceil(p)),smoothstep(0.0,1.0,fract(p)))*2.0;
 }
 void main() {
+    uvec2 uv0_pre = uvec2(round(a_texcoord0 * 65535.0));
+    uvec2 uv0 = vec2(float((uv0_pre.x & 32767u) << uint(1)), float((uv0_pre.y & 32767u) << uint(1))) * vec2_splat(1.525902189314365386962890625e-05);
     vec2 uv1 = fract(a_texcoord1.y*vec2(256.0, 4096.0));
     v_sky = vec4_splat(0.);
     mat4 model;
@@ -62,7 +64,7 @@ void main() {
         color.a = mix(a_color0.a, 1.0, clamp((camDis / FogAndDistanceControl.w), 0.0, 1.0));
     }
 #endif
-    v_texcoord0 = a_texcoord0;
+    v_texcoord0 = uv0;
     v_lightmapUV = uv1;
     v_color0 = color;
     gl_Position = mul(u_viewProj, vec4(worldPos, 1.0));
