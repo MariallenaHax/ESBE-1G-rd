@@ -63,7 +63,10 @@ void main() {
         color.a = mix(a_color0.a, 1.0, clamp((camDis / FogAndDistanceControl.w), 0.0, 1.0));
     }
 #endif
-    v_texcoord0 = vec2(float((uv0.x & 32767u) << uint(1)), float((uv0.y & 32767u) << uint(1))) * vec2_splat(1.525902189314365386962890625e-05);
+    vec2 texcoord = vec2(float((uv0.x & 32767u) << uint(1)), float((uv0.y & 32767u) << uint(1))) * vec2_splat(1.525902189314365386962890625e-05);
+    texcoord.x += (3.0517578125e-05 * ((2.0 * float((uv0.x & 32768u) >> uint(15))) - 1.0));
+    texcoord.y += (3.0517578125e-05 * ((2.0 * float((uv0.y & 32768u) >> uint(15))) - 1.0));
+    v_texcoord0 = texcoord;
     v_lightmapUV = uv1;
     v_color0 = color;
     gl_Position = mul(u_viewProj, vec4(worldPos, 1.0));
