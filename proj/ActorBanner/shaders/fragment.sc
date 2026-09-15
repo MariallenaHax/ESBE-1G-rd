@@ -24,9 +24,12 @@ uniform vec4 UVAnimation;
 uniform mat4 Bones[8];
 uniform vec4 BannerColors[7];
 uniform vec4 BannerUVOffsetsAndScales[7];
+uniform vec4 DitherParams2[3];
+uniform vec4 DitherParams;
+uniform vec4 DitheringEnabledToggle;
 
-SAMPLER2D_AUTOREG(s_MatTexture);
-SAMPLER2D_AUTOREG(s_MatTexture1);
+SAMPLER2D(s_MatTexture,0);
+SAMPLER2D(s_MatTexture1,1);
 
 float filmic_curve(float x) {
 	float A = 0.45;
@@ -76,7 +79,6 @@ void main() {
     if(shouldDiscard(albedo.rgb, alpha, ActorFPEpsilon.x)) {
         discard;
     }
-
     #if CHANGE_COLOR__MULTI
         albedo = applyMultiColorChange(albedo, ChangeColor.rgb, MultiplicativeTintColor.rgb);
     #elif CHANGE_COLOR__ON

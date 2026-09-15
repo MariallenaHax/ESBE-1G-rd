@@ -53,11 +53,11 @@
 
 // To be able to patch the uav registers on the DXBC SPDB Chunk (D3D11 renderer) the whitespaces around
 // '_type[_reg]' are necessary. This only affects shaders with debug info (i.e., those that have the SPDB Chunk).
-#	if BGFX_SHADER_LANGUAGE_HLSL > 400 || BGFX_SHADER_LANGUAGE_PSSL || BGFX_SHADER_LANGUAGE_SPIRV || BGFX_SHADER_LANGUAGE_METAL
+//#	if BGFX_SHADER_LANGUAGE_HLSL > 400 || BGFX_SHADER_LANGUAGE_PSSL || BGFX_SHADER_LANGUAGE_SPIRV || BGFX_SHADER_LANGUAGE_METAL
 #		define REGISTER(_type, _reg) register( _type[_reg] )
-#	else
-#		define REGISTER(_type, _reg) register(_type ## _reg)
-#	endif // BGFX_SHADER_LANGUAGE_HLSL
+//#	else
+//#		define REGISTER(_type, _reg) register(_type ## _reg)
+//#	endif // BGFX_SHADER_LANGUAGE_HLSL
 
 #   if BGFX_SHADER_LANGUAGE_HLSL >= 400 && BGFX_SHADER_TYPE_FRAGMENT
 cbuffer __placeholder__ : REGISTER(b, 0) {};
@@ -170,6 +170,18 @@ struct BgfxSamplerCubeShadow
 {
 	SamplerComparisonState m_sampler;
 	TextureCube m_texture;
+};
+
+struct BgfxSamplerCubeArray
+{
+	SamplerState m_sampler;
+	TextureCubeArray m_texture;
+};
+
+struct BgfxSamplerCubeArrayShadow
+{
+	SamplerComparisonState m_sampler;
+	TextureCubeArray m_texture;
 };
 
 struct BgfxSampler2DMS
@@ -304,6 +316,26 @@ vec4 bgfxTextureCubeLod(BgfxSamplerCube _sampler, vec3 _coord, float _level)
 float bgfxShadowCube(BgfxSamplerCubeShadow _sampler, vec4 _coord)
 {
 	return _sampler.m_texture.SampleCmpLevelZero(_sampler.m_sampler, _coord.xyz, _coord.w);
+}
+
+vec4 bgfxTextureCubeArray(BgfxSamplerCubeArray _sampler, vec4 _coord)
+{
+	return _sampler.m_texture.Sample(_sampler.m_sampler, _coord);
+}
+
+vec4 bgfxTextureCubeArrayBias(BgfxSamplerCubeArray _sampler, vec4 _coord, float _bias)
+{
+	return _sampler.m_texture.SampleBias(_sampler.m_sampler, _coord, _bias);
+}
+
+vec4 bgfxTextureCubeArrayLod(BgfxSamplerCubeArray _sampler, vec4 _coord, float _lod)
+{
+	return _sampler.m_texture.SampleLevel(_sampler.m_sampler, _coord, _lod);
+}
+
+float bgfxTextureCubeArrayShadow(BgfxSamplerCubeArrayShadow _sampler, vec4 _coord, float _compare)
+{
+	return _sampler.m_texture.SampleCmpLevelZero(_sampler.m_sampler, _coord, _compare);
 }
 
 vec4 bgfxTexelFetch(BgfxSampler2D _sampler, ivec2 _coord, int _lod)
@@ -510,6 +542,22 @@ vec3 bgfxTextureSize(BgfxSampler3D _sampler, int _lod)
 #		define samplerCubeShadow BgfxSamplerCubeShadow
 #		define shadowCube(_sampler, _coord) bgfxShadowCube(_sampler, _coord)
 
+#	    define SAMPLERCUBEARRAY(_name, _reg) \
+			uniform SamplerState _name ## Sampler : REGISTER(s, _reg); \
+			uniform TextureCubeArray _name ## Texture : REGISTER(t, _reg); \
+			static BgfxSamplerCubeArray _name = { _name ## Sampler, _name ## Texture }
+#		define samplerCubeArray BgfxSamplerCubeArray
+#		define textureCubeArray(_sampler, _coord) bgfxTextureCubeArray(_sampler, _coord)
+#		define textureCubeArrayBias(_sampler, _coord, _bias) bgfxTextureCubeArrayBias(_sampler, _coord, _bias)
+#		define textureCubeArrayLod(_sampler, _coord, _level) bgfxTextureCubeArrayLod(_sampler, _coord, _level)
+
+#	    define SAMPLERCUBEARRAYSHADOW(_name, _reg) \
+			uniform SamplerComparisonState _name ## Sampler : REGISTER(s, _reg); \
+			uniform TextureCubeArray _name ## Texture : REGISTER(t, _reg); \
+			static BgfxSamplerCubeArrayShadow _name = { _name ## Sampler, _name ## Texture }
+#		define samplerCubeArrayShadow BgfxSamplerCubeArrayShadow
+#		define shadowCubeArray(_sampler, _coord, _compare) bgfxTextureCubeArrayShadow(_sampler, _coord, _compare)
+			
 #		define texelFetch(_sampler, _coord, _lod) bgfxTexelFetch(_sampler, _coord, _lod)
 #		define texelFetchOffset(_sampler, _coord, _lod, _offset) bgfxTexelFetchOffset(_sampler, _coord, _lod, _offset)
 #		define textureSize(_sampler, _lod) bgfxTextureSize(_sampler, _lod)
@@ -631,10 +679,11 @@ vec4  mod(vec4  _a, vec4  _b) { return _a - _b * floor(_a / _b); }
 #	define SAMPLER2D_HIGHP(_name, _reg) uniform highp sampler2D _name
 #	define SAMPLERCUBE_HIGHP(_name, _reg) uniform highp samplerCube _name
 
-#	define SAMPLER2DARRAY(_name, _reg)       uniform highp sampler2DArray _name
-#	define SAMPLER2DMSARRAY(_name, _reg)     uniform highp sampler2DMSArray _name
-#	define SAMPLERCUBEARRAY(_name, _reg)     uniform highp samplerCubeArray _name
-#	define SAMPLER2DARRAYSHADOW(_name, _reg) uniform highp sampler2DArrayShadow _name
+#	define SAMPLER2DARRAY(_name, _reg)         uniform highp sampler2DArray _name
+#	define SAMPLER2DMSARRAY(_name, _reg)       uniform highp sampler2DMSArray _name
+#	define SAMPLERCUBEARRAY(_name, _reg)       uniform highp samplerCubeArray _name
+#	define SAMPLERCUBEARRAYSHADOW(_name, _reg) uniform highp samplerCubeArrayShadow _name
+#	define SAMPLER2DARRAYSHADOW(_name, _reg)   uniform highp sampler2DArrayShadow _name
 
 #	define ISAMPLER2D(_name, _reg) uniform highp isampler2D _name
 #	define USAMPLER2D(_name, _reg) uniform highp usampler2D _name
@@ -652,7 +701,12 @@ vec4  mod(vec4  _a, vec4  _b) { return _a - _b * floor(_a / _b); }
 #		define texture2DLodOffset(_sampler, _coord, _lod, _offset) textureLodOffset(_sampler, _coord, _lod, _offset)
 #		define texture2DBias(_sampler, _coord, _bias)      texture(_sampler, _coord, _bias)
 #		define textureCubeBias(_sampler, _coord, _bias)    texture(_sampler, _coord, _bias)
+#		define shadowCube(_sampler, _coord)                texture(_sampler, _coord)
 #		define shadow2DArray(_sampler, _coord)             texture(_sampler, _coord)
+#		define textureCubeArray(_sampler, _coord)            texture(_sampler, _coord)
+#		define textureCubeArrayBias(_sampler, _coord, _bias) texture(_sampler, _coord, _bias)
+#		define textureCubeArrayLod(_sampler, _coord, _level) textureLod(_sampler, _coord, _level)
+#		define shadowCubeArray(_sampler, _coord, _compare)   texture(_sampler, _coord, _compare)
 #	else
 #		define texture2DBias(_sampler, _coord, _bias)      texture2D(_sampler, _coord, _bias)
 #		define textureCubeBias(_sampler, _coord, _bias)    textureCube(_sampler, _coord, _bias)
@@ -678,10 +732,11 @@ vec4  rcp(vec4  _a) { return vec4(1.0)/_a; }
 #define SAMPLER2D_HIGHP_AUTOREG(_name, _reg)  SAMPLER2D_HIGHP(_name, _name ## _REG)
 #define SAMPLERCUBE_HIGHP_AUTOREG(_name, _reg) SAMPLERCUBE_HIGHP(_name, _name ## _REG)
 
-#define SAMPLER2DARRAY_AUTOREG(_name)       SAMPLER2DARRAY(_name, _name ## _REG)
-#define SAMPLER2DMSARRAY_AUTOREG(_name)     SAMPLER2DMSARRAY(_name, _name ## _REG)
-#define SAMPLERCUBEARRAY_AUTOREG(_name)     SAMPLERCUBEARRAY(_name, _name ## _REG)
-#define SAMPLER2DARRAYSHADOW_AUTOREG(_name) SAMPLER2DARRAYSHADOW(_name, _name ## _REG)
+#define SAMPLER2DARRAY_AUTOREG(_name)         SAMPLER2DARRAY(_name, _name ## _REG)
+#define SAMPLER2DMSARRAY_AUTOREG(_name)       SAMPLER2DMSARRAY(_name, _name ## _REG)
+#define SAMPLERCUBEARRAY_AUTOREG(_name)       SAMPLERCUBEARRAY(_name, _name ## _REG)
+#define SAMPLER2DARRAYSHADOW_AUTOREG(_name)   SAMPLER2DARRAYSHADOW(_name, _name ## _REG)
+#define SAMPLERCUBEARRAYSHADOW_AUTOREG(_name) SAMPLERCUBEARRAYSHADOW(_name, _name ## _REG)
 
 #define ISAMPLER2D_AUTOREG(_name) ISAMPLER2D(_name, _name ## _REG)
 #define USAMPLER2D_AUTOREG(_name) USAMPLER2D(_name, _name ## _REG)
@@ -771,13 +826,23 @@ uniform mat4  u_proj;
 uniform mat4  u_invProj;
 uniform mat4  u_viewProj;
 uniform mat4  u_invViewProj;
+#if BGFX_SHADER_LANGUAGE_SPIRV
+uniform mat4  u_model[4];
+#else
 uniform mat4  u_model[BGFX_CONFIG_MAX_BONES];
+#endif
 uniform mat4  u_modelView;
 uniform mat4  u_modelViewProj;
 uniform vec4  u_alphaRef4;
 #define u_alphaRef u_alphaRef4.x
 uniform vec4  u_prevWorldPosOffset;
 uniform mat4  u_prevViewProj;
+
+#if BGFX_SHADER_LANGUAGE_SPIRV
+float ndc(float y) { return -y; }
+#else
+float ndc(float y) { return y; }
+#endif
 
 #endif // __cplusplus
 

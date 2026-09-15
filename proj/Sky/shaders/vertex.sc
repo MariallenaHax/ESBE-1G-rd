@@ -26,7 +26,9 @@ void main() {
     vec3 pos = a_position;
     pos.y -= length(pos.xyz)*.2;
     v_worldPos = mul(model, vec4(pos, 1.0)).xyz;
-    gl_Position = mul(u_modelViewProj, vec4(pos, 1.0));
+    vec4 pos2 = mul(u_modelViewProj, vec4(pos, 1.0));
+    pos2.y = ndc(pos2.y);
+    gl_Position = pos2;
     v_color0 = a_color0;
     v_prevWorldPos = a_position.xyz;
 }

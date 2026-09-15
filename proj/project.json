@@ -1,6 +1,6 @@
 {
   "base_profile": {
-    "platforms": ["Direct3D_SM50"],
+    "platforms": ["ESSL_310", "Metal", "Direct3D_SM40", "Direct3D_SM50", "Direct3D_SM60", "Direct3D_SM65", "Vulkan"],
     "merge_source": ["../src-materials"],
     "exclude_patterns": [".*", "_*"],
     "include_search_paths": ["../include"]
@@ -16,11 +16,15 @@
     },
     "windows": {
       "macros": [],
-      "platforms": ["Direct3D_SM50"]
+      "platforms": ["Direct3D_SM40", "Direct3D_SM50", "Direct3D_SM60", "Direct3D_SM65"]
+    },
+    "switch": {
+      "macros": [],
+      "platforms": ["Vulkan"]
     },
     "merged": {
       "macros": [],
-      "platforms": ["ESSL_310", "Metal", "Direct3D_SM50"]
+      "platforms": ["ESSL_310", "Metal", "Direct3D_SM40", "Direct3D_SM50", "Direct3D_SM60", "Direct3D_SM65", "Vulkan"]
     }
   }
 }

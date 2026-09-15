@@ -5,7 +5,7 @@ $input v_texcoord0,v_color0,v_worldPos
 uniform vec4 SunMoonColor;
 uniform vec4 FogAndDistanceControl;
 
-SAMPLER2D_AUTOREG(s_SunMoonTexture);
+SAMPLER2D(s_SunMoonTexture,0);
 
 float noise(float t)
 {

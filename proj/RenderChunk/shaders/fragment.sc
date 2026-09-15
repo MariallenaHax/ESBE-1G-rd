@@ -1,15 +1,18 @@
-$input v_texcoord0, v_color0, v_fog, v_lightmapUV,v_prevWorldPos,v_worldPos,v_sky
+$input v_texcoord0, v_color0, v_fog, v_lightmapUV,v_prevWorldPos,v_worldPos,v_sky,v_ditheringAndMaskTinting,v_clipPosition
 
 #include <bgfx_shader.sh>
-#include <utils/snoise.h>
 
-SAMPLER2D_AUTOREG(s_MatTexture);
-SAMPLER2D_AUTOREG(s_SeasonsTexture);
-SAMPLER2D_AUTOREG(s_LightMapTexture);
+SAMPLER2D(s_SeasonsTexture,2);
+SAMPLER2D(s_MatTexture,1);
+SAMPLER2D(s_LightMapTexture,0);
 
-uniform vec4 FogAndDistanceControl;
+uniform vec4 DitherParams2[3];
+uniform vec4 DitherParams;
 uniform vec4 FogColor;
 uniform vec4 ViewPositionAndTime;
+uniform vec4 FogAndDistanceControl;
+
+#include <utils/snoise.h>
 
 float filmic_curve(float x) {
 	float A = 0.48;								
@@ -65,14 +68,35 @@ void main() {
     diffuse.rgb = vec3(1.0, 1.0, 1.0);
 #else
     diffuse = texture2D(s_MatTexture, v_texcoord0);
-	
-
-#ifdef ALPHA_TEST_PASS
-    if (diffuse.a < 0.5) {
-        discard;
-    }
 #endif
 
+bool dither = false;
+#if defined(DITHERING__ON) && (defined(ALPHA_TEST_PASS) || defined(TRANSPARENT_PASS)) 
+    if (v_ditheringAndMaskTinting.x > 0.5)
+    {
+          vec2 phase1 = floor(((((v_clipPosition.xyz / vec3_splat(v_clipPosition.w)).xy * 0.5) + vec2_splat(0.5)) * DitherParams.xy) / vec2_splat(DitherParams2[2].z)) * DitherParams2[2].z;
+          vec2 phase2 = floor(phase1 * 0.25);
+          vec2 phase3 = floor(phase1 * 0.5);
+          vec2 phase4 = floor(phase1);
+          dither = smoothstep(DitherParams2[2].x, DitherParams2[2].y, dot(-normalize(u_view[2].xyz), v_worldPos.xyz - ViewPositionAndTime.xyz)) <= (((((((fract((phase2.x * 0.5) + ((phase2.y * phase2.y) * 0.75)) * 0.25) + fract((phase3.x * 0.5) + ((phase3.y * phase3.y) * 0.75))) * 0.25) + fract((phase4.x * 0.5) + ((phase4.y * phase4.y) * 0.75))) * 64.0) + 0.5) * 0.015625);
+          #ifdef TRANSPARENT_PASS
+          if(dither) 
+          {
+            diffuse.a = 0.0;
+          }
+          #endif
+    }
+    else
+    {
+          dither = false;
+    }
+#endif
+#ifdef ALPHA_TEST_PASS
+      if (dither || (diffuse.a < 0.5))
+      {
+        discard;
+      }
+#endif
 #if defined(SEASONS__ON) && (defined(OPAQUE_PASS) || defined(ALPHA_TEST_PASS))
     diffuse.rgb *=
         mix(vec3(1.0, 1.0, 1.0),
@@ -81,11 +105,11 @@ void main() {
 #else
     diffuse *= v_color0;
 #endif
-#endif
 
 #ifndef TRANSPARENT_PASS
     diffuse.a = 1.0;
 #endif
+
 vec3 cPos = v_prevWorldPos;
 vec3 wPos = v_worldPos;
 float weather = smoothstep(0.8,1.0,FogAndDistanceControl.y);
@@ -110,11 +134,13 @@ diffuse.rgb = ESBEmapping(diffuse.rgb);
 
 diffuse.rgb += (vec3_splat(1.)-diffuse.rgb)*diffuse.rgb*sunlight*daylight*0.83;
 
+//Water Effect Code
 if (v_sky.r > 0.0)
 {
 		diffuse = mix(diffuse,water(diffuse,weather,TIME,v_lightmapUV,cPos,wPos),1.2-cosT);
 }
 		if (v_sky.r+w>0.5)diffuse = water(diffuse,weather,TIME,v_lightmapUV,cPos,wPos);
+
 
 	float s_amount = mix(0.45,0.0,sunlight);
 	diffuse.rgb = mix(diffuse.rgb,vec3(0.05,0.05,0.05),s_amount*shset*daylight);

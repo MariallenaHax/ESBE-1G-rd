@@ -12,7 +12,7 @@ uniform vec4 MultiplicativeTintColor;
 uniform vec4 TileLightColor;
 uniform vec4 GlintColor;
 
-SAMPLER2D_AUTOREG(s_GlintTexture);
+SAMPLER2D(s_GlintTexture,0);
 
 float filmic_curve(float x) {
 	float A = 0.45;

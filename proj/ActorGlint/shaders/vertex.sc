@@ -3,7 +3,7 @@ $input a_position, a_color0, a_texcoord0, a_indices, a_normal
     $input i_data0, i_data1, i_data2
 #endif
 
-$output v_color0, v_fog, v_light, v_texcoord0, v_layerUv
+$output v_color0, v_fog, v_light, v_texcoord0, v_layerUv, v_clipPosition, v_worldPos
 
 #include <bgfx_shader.sh>
 #include <utils/FogUtil.h>
@@ -57,14 +57,13 @@ void main() {
     model[1] = vec4(i_data0.y, i_data1.y, i_data2.y, 0);
     model[2] = vec4(i_data0.z, i_data1.z, i_data2.z, 0);
     model[3] = vec4(i_data0.w, i_data1.w, i_data2.w, 1);
-    worldPosition = instMul(model, vec4(a_position, 1.0)).xyz;
+    worldPosition = mul(vec4(a_position, 1.0),model).xyz;
 #else
     worldPosition = mul(World, vec4(a_position, 1.0)).xyz;
 #endif
     
-    vec4 position;// = mul(u_viewProj, vec4(worldPosition, 1.0));
+    vec4 position;
 
-    //StandardTemplate_InvokeVertexOverrideFunction
     position = jitterVertexPosition(worldPosition);
     float cameraDepth = position.z;
     float fogIntensity = calculateFogIntensity(cameraDepth, FogControl.z, FogControl.x, FogControl.y);
@@ -81,5 +80,8 @@ void main() {
     v_layerUv = layerUV;
     v_fog = fog; 
     v_light = light;
+    v_clipPosition = position;
+    position.y = ndc(position.y);
     gl_Position = position;
+    v_worldPos = worldPosition;
 }

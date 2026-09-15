@@ -8,7 +8,9 @@ void main()
     vec3 esb_u = vec3_splat(1.);
     esb_u.xz *= 20.;
     vec3 position = a_position * esb_u;
-    gl_Position = mul(u_modelViewProj, vec4(position, 1.0));
+    vec4 pos = mul(u_modelViewProj, vec4(position, 1.0));
+    pos.y = ndc(pos.y);
+    gl_Position = pos;
 
     v_texcoord0 = a_texcoord0;
     v_worldPos = a_position;

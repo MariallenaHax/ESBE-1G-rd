@@ -32,7 +32,7 @@ void main() {
     vec3 worldPosition;
 #if INSTANCING__ON
     mat4 model = mtxFromCols(i_data0, i_data1, i_data2, vec4(0.0, 0.0, 0.0, 1.0));
-    worldPosition = instMul(model, vec4(a_position, 1.0)).xyz;
+    worldPosition = mul(vec4(a_position, 1.0),model).xyz;
 #else
     worldPosition = mul(World, vec4(a_position, 1.0)).xyz;
 #endif
@@ -52,5 +52,6 @@ void main() {
     v_light = light;
     v_fog = fog;
     v_texcoord0 = a_texcoord0;
+    position.y = ndc(position.y);
     gl_Position = position;
 }

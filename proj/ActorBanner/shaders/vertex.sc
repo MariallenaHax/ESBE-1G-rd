@@ -50,14 +50,13 @@ void main() {
     model[1] = vec4(i_data0.y, i_data1.y, i_data2.y, 0);
     model[2] = vec4(i_data0.z, i_data1.z, i_data2.z, 0);
     model[3] = vec4(i_data0.w, i_data1.w, i_data2.w, 1);
-    worldPosition = instMul(model, vec4(a_position, 1.0)).xyz;
+    worldPosition = mul(vec4(a_position, 1.0),model).xyz;
 #else
     worldPosition = mul(World, vec4(a_position, 1.0)).xyz;
 #endif
     
-    vec4 position;// = mul(u_viewProj, vec4(worldPosition, 1.0));
+    vec4 position;
 
-    //StandardTemplate_InvokeVertexOverrideFunction
     position = jitterVertexPosition(worldPosition);
     float cameraDepth = position.z;
     float fogIntensity = calculateFogIntensity(cameraDepth, FogControl.z, FogControl.x, FogControl.y);
@@ -95,5 +94,6 @@ void main() {
 
     v_fog = fog;
     v_light = light;
+    position.y = ndc(position.y);
     gl_Position = position;
 }
